@@ -1,17 +1,24 @@
-// app/courier/current/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
+  CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+/* Mapbox (lazy) – only when tab = map */
+const RouteMap = dynamic(
+  () => import("@/components/custom/courier/RouteShipmentsMap"),
+  { ssr: false }
+);
 
 /* ---------- Types ---------- */
 interface Shipment {
@@ -40,16 +47,16 @@ export default function CourierCurrentPage() {
   const [route, setRoute] = useState<Route | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"list" | "map">("list");
 
   /* fetch active route */
   useEffect(() => {
     if (!isLoaded || !user) return;
     (async () => {
       try {
-        const res = await fetch(
-          `/api/routes/my-active/${user.id}`,
-          { cache: "no-store" }
-        );
+        const res = await fetch(`/api/routes/my-active/${user.id}`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         setRoute(data.active ?? null);
       } catch {
@@ -87,7 +94,7 @@ export default function CourierCurrentPage() {
     }
   };
 
-  /* badge color map */
+  /* badge helper */
   const badgeClass = (st?: string) =>
     ({
       בהמתנה: "bg-yellow-400 text-black",
@@ -97,7 +104,6 @@ export default function CourierCurrentPage() {
       נמסר: "bg-green-600 text-white",
     }[st as keyof typeof badgeClass] ?? "bg-gray-300 text-black");
 
-  /* translate raw status to label */
   const renderStatus = (raw?: string) =>
     raw === "נאסף"
       ? "איסוף"
@@ -105,16 +111,16 @@ export default function CourierCurrentPage() {
       ? "מסירה"
       : raw ?? "לא ידוע";
 
-  /* loading / no-route states */
+  /* loading / no‑route */
   if (!isLoaded)
     return (
-      <main className="p-4 flex items-center justify-center h-full text-gray-400">
-        טוען...
+      <main className="flex items-center justify-center h-full text-gray-400">
+        <Loader2 className="animate-spin mx-2" /> טוען...
       </main>
     );
   if (!route)
     return (
-      <main className="p-4 flex items-center justify-center h-full text-gray-500">
+      <main className="flex items-center justify-center h-full text-gray-500">
         אין לך מסלול פעיל כרגע
       </main>
     );
@@ -173,137 +179,156 @@ export default function CourierCurrentPage() {
         </CardContent>
       </Card>
 
-      {/* shipment list */}
+      {/* Tabs: list | map */}
       {expanded && (
-        <div className="space-y-3">
-          {route.shipmentOrder.map((o) => {
-            const s  = o.shipmentId;
-            const st = s.otherDetails?.[0] ?? "לא ידוע";
+        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+          <TabsList className="w-full grid grid-cols-2 rounded-lg mb-4">
+            <TabsTrigger value="list" className="w-full">
+              רשימה
+            </TabsTrigger>
+            <TabsTrigger value="map" className="w-full">
+              מפה
+            </TabsTrigger>
+          </TabsList>
 
-            const lng = s.otherDetails?.[2];
-            const lat = s.otherDetails?.[3];
-            const hasCoords = lng && lat;
-            const wazeUrl =
-              hasCoords
-                ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`
-                : null;
+          {/* ---- LIST TAB ---- */}
+          <TabsContent value="list">
+            <div className="space-y-3">
+              {route.shipmentOrder.map((o) => {
+                const s = o.shipmentId;
+                const st = s.otherDetails?.[0] ?? "לא ידוע";
 
-            const isPickup   = st === "נאסף";
-            const isDelivery = st === "בדרך ללקוח";
+                const lng = s.otherDetails?.[2];
+                const lat = s.otherDetails?.[3];
+                const hasCoords = lng && lat;
+                const wazeUrl = hasCoords
+                  ? `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`
+                  : null;
 
-            /* next status & button label */
-            const nextStatus = isPickup
-              ? "בדרך לסניף"
-              : isDelivery
-              ? "נמסר"
-              : null;
-            const btnLabel = isPickup ? "סמן איסוף" : isDelivery ? "סמן מסירה" : "";
+                const isPickup = st === "נאסף";
+                const isDelivery = st === "בדרך ללקוח";
+                const nextStatus = isPickup
+                  ? "בדרך לסניף"
+                  : isDelivery
+                  ? "נמסר"
+                  : null;
+                const btnLabel = isPickup ? "סמן איסוף" : isDelivery ? "סמן מסירה" : "";
 
-            /* mark done */
-            const markDone = async () => {
-              if (!nextStatus) return;
-              try {
-                await fetch(`/api/shipments/${s._id}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ status: nextStatus }),
-                });
-                s.otherDetails![0] = nextStatus; // optimistic
-                toast.success("עודכן!");
-                setRoute({ ...route });
-              } catch {
-                toast.error("עדכון נכשל");
-              }
-            };
+                const markDone = async () => {
+                  if (!nextStatus) return;
+                  try {
+                    await fetch(`/api/shipments/${s._id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ status: nextStatus }),
+                    });
+                    s.otherDetails![0] = nextStatus; // optimistic
+                    toast.success("עודכן!");
+                    setRoute({ ...route });
+                  } catch {
+                    toast.error("עדכון נכשל");
+                  }
+                };
 
-            return (
-              <Card key={s._id} className="shadow-sm">
-                <CardContent className="py-4 space-y-3 text-sm">
-                  {/* row 1 */}
-                  <div className="flex justify-between items-center font-semibold">
-                    <span>הזמנה #{s.orderNumber}</span>
-                    {isDelivery && s.totalPrice && (
-                      <span className="text-green-700">{s.totalPrice} ₪</span>
-                    )}
-                  </div>
+                return (
+                  <Card key={s._id} className="shadow-sm">
+                    <CardContent className="py-4 space-y-3 text-sm">
+                      {/* row 1 */}
+                      <div className="flex justify-between items-center font-semibold">
+                        <span>הזמנה #{s.orderNumber}</span>
+                        {isDelivery && s.totalPrice && (
+                          <span className="text-green-700">
+                            {s.totalPrice} ₪
+                          </span>
+                        )}
+                      </div>
 
-                  {/* row 2 */}
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 rtl">
-                      {isPickup
-                        ? `מ־ ${s.store?.businessName}`
-                        : `מ־ ${s.store?.businessName} → ${s.customerName}`}
-                      <br />
-                      <span className="text-gray-600 text-xs">
-                        {isPickup
-                          ? s.store?.address?.join(" ")
-                          : s.address?.join(" ")}
-                      </span>
-                    </div>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs ${badgeClass(st)}`}
-                    >
-                      {renderStatus(st)}
-                    </span>
-                  </div>
-
-                  {/* row 3 */}
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {s.store?.phoneNumber && (
-                      <a
-                        href={`tel:${s.store.phoneNumber}`}
-                        className="bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300"
-                      >
-                        📞 חנות
-                      </a>
-                    )}
-                    {s.phoneNumber && (
-                      <a
-                        href={`tel:${s.phoneNumber}`}
-                        className="bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300"
-                      >
-                        📞 לקוח
-                      </a>
-                    )}
-                    {hasCoords && (
-                      <>
-                        <a
-                          href={wazeUrl!}
-                          target="_blank"
-                          className="bg-blue-500 text-white px-2 py-0.5 rounded hover:bg-blue-600"
+                      {/* row 2 */}
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 rtl">
+                          {isPickup
+                            ? `מ־ ${s.store?.businessName}`
+                            : `מ־ ${s.store?.businessName} → ${s.customerName}`}
+                          <br />
+                          <span className="text-gray-600 text-xs">
+                            {isPickup
+                              ? s.store?.address?.join(" ")
+                              : s.address?.join(" ")}
+                          </span>
+                        </div>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs ${badgeClass(
+                            st
+                          )}`}
                         >
-                          🗺️ Waze
-                        </a>
-                        <a
-                          href={`https://maps.google.com/?q=${lat},${lng}`}
-                          target="_blank"
-                          className="bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-700"
-                        >
-                          📍 מפה
-                        </a>
-                      </>
-                    )}
-                  </div>
+                          {renderStatus(st)}
+                        </span>
+                      </div>
 
-                  {/* row 4 */}
-                  {nextStatus && (
-                    <Button
-                      size="sm"
-                      onClick={markDone}
-                      className={`w-full ${
-                        isPickup
-                          ? "bg-orange-600 hover:bg-orange-700"
-                          : "bg-green-600 hover:bg-green-700"
-                      }`}
-                    >
-                      {btnLabel}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                      {/* row 3 */}
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {s.store?.phoneNumber && (
+                          <a
+                            href={`tel:${s.store.phoneNumber}`}
+                            className="bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300"
+                          >
+                            📞 חנות
+                          </a>
+                        )}
+                        {s.phoneNumber && (
+                          <a
+                            href={`tel:${s.phoneNumber}`}
+                            className="bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300"
+                          >
+                            📞 לקוח
+                          </a>
+                        )}
+                        {hasCoords && (
+                          <>
+                            <a
+                              href={wazeUrl!}
+                              target="_blank"
+                              className="bg-blue-500 text-white px-2 py-0.5 rounded hover:bg-blue-600"
+                            >
+                              🗺️ Waze
+                            </a>
+                            <a
+                              href={`https://maps.google.com/?q=${lat},${lng}`}
+                              target="_blank"
+                              className="bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-700"
+                            >
+                              📍 מפה
+                            </a>
+                          </>
+                        )}
+                      </div>
+
+                      {/* row 4 */}
+                      {nextStatus && (
+                        <Button
+                          size="sm"
+                          onClick={markDone}
+                          className={`w-full ${
+                            isPickup
+                              ? "bg-orange-600 hover:bg-orange-700"
+                              : "bg-green-600 hover:bg-green-700"
+                          }`}
+                        >
+                          {btnLabel}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* ---- MAP TAB ---- */}
+          <TabsContent value="map">
+            <RouteMap shipmentOrder={route.shipmentOrder} />
+          </TabsContent>
+        </Tabs>
       )}
     </main>
   );

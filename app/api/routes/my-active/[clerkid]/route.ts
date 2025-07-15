@@ -38,7 +38,7 @@ async function populateShipment(order: any) {
       ? {
           businessName: store.businessName,
           phoneNumber: store.phoneNumber,
-          address: store.address.split(" "),
+          address: store.address?.split(" ") || [],
         }
       : null,
   } as any;
@@ -46,7 +46,7 @@ async function populateShipment(order: any) {
 
 /* ---------- GET handler ---------- */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: { clerkid: string } }
 ) {
   try {
@@ -56,30 +56,14 @@ export async function GET(
 
     await connectToDB();
 
-    /* Date range for "today" (server time) */
     const now = new Date();
     const todayStart = new Date(now.setHours(0, 0, 0, 0));
-    const todayEnd   = new Date(now.setHours(23, 59, 59, 999));
+    const todayEnd = new Date(now.setHours(23, 59, 59, 999));
 
-    /* Active route: today & no finishTime */
-    const activeRaw = await Route.findOne({
-      courierPhone: clerkid,
-      date: { $gte: todayStart, $lte: todayEnd },
-      finishTime: { $exists: false },
-    })
-      .sort({ date: -1 })
-      .lean();
+    const url = new URL(req.url);
+    const historyOnly = url.searchParams.get("history") === "1";
 
-    /* History routes: today & already finished */
-    const historyRaw = await Route.find({
-      courierPhone: clerkid,
-      date: { $gte: todayStart, $lte: todayEnd },
-      finishTime: { $exists: true },
-    })
-      .sort({ date: -1 })
-      .lean();
-
-    /* populate shipments + stores */
+    /* populate helper */
     const populateRoute = async (route: any | null) => {
       if (!route) return null;
       for (const order of route.shipmentOrder) {
@@ -88,8 +72,24 @@ export async function GET(
       return route;
     };
 
-    const active  = await populateRoute(activeRaw);
+    /* Fetch routes */
+    const historyRaw = await Route.find({
+      courierPhone: clerkid,
+    }).sort({ date: -1 }).lean();
+
     const history = await Promise.all(historyRaw.map(populateRoute));
+
+    if (historyOnly) {
+      return NextResponse.json({ history });
+    }
+
+    const activeRaw = await Route.findOne({
+      courierPhone: clerkid,
+      date: { $gte: todayStart, $lte: todayEnd },
+      finishTime: { $exists: false },
+    }).sort({ date: -1 }).lean();
+
+    const active = await populateRoute(activeRaw);
 
     return NextResponse.json({ active, history });
   } catch (err) {
