@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // GET all payments for a specific store
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: any // { params: { id: string } }
 ) {
   try {
     await connectToDB();
