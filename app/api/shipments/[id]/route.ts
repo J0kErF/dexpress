@@ -4,7 +4,10 @@ import Shipment from "@/models/Shipment";
 import mongoose from "mongoose";
 
 /* -------------------------------- GET -------------------------------- */
-export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
+export async function GET(
+  _req: NextRequest,
+  ctx: any // { params: { id: string } }
+) {
   await connectToDB();
   const { id } = ctx.params;
 
@@ -19,7 +22,10 @@ export async function GET(_req: NextRequest, ctx: { params: { id: string } }) {
 }
 
 /* -------------------------------- PUT (Update All Fields) -------------------------------- */
-export async function PUT(req: NextRequest, ctx: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest, 
+  ctx: any // { params: { id: string } }
+) {
   const { id } = ctx.params;
 
   if (!mongoose.Types.ObjectId.isValid(id))
@@ -63,7 +69,10 @@ export async function PUT(req: NextRequest, ctx: { params: { id: string } }) {
 }
 
 /* -------------------------------- DELETE -------------------------------- */
-export async function DELETE(_req: NextRequest, ctx: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  ctx: any // { params: { id: string } }
+) {
   const { id } = ctx.params;
 
   if (!mongoose.Types.ObjectId.isValid(id))
@@ -78,7 +87,10 @@ export async function DELETE(_req: NextRequest, ctx: { params: { id: string } })
 }
 
 /* -------------------------------- PATCH (Partial Update) -------------------------------- */
-export async function PATCH(req: NextRequest, ctx: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  ctx: any // { params: { id: string } }
+) {
   const { id } = ctx.params;
 
   if (!mongoose.Types.ObjectId.isValid(id))

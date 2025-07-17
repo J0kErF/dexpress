@@ -3,14 +3,20 @@ import { NextRequest, NextResponse } from "next/server";
 import {connectToDB} from "@/lib/mongodb";
 import User from "@/models/User";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+   { params }: any
+) {
   await connectToDB();
   const user = await User.findById(params.id);
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
   return NextResponse.json(user);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+   { params }: any
+) {
   await connectToDB();
   const data = await req.json();
 
@@ -23,7 +29,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _: NextRequest, { params }: any
+) {
   await connectToDB();
   const deleted = await User.findByIdAndDelete(params.id);
   if (!deleted) return NextResponse.json({ error: "User not found" }, { status: 404 });

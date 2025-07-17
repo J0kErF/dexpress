@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // GET store by ID
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: any // { params: { id: string } }
 ) {
   await connectToDB();
   const { id } = await params;
@@ -20,7 +20,7 @@ export async function GET(
 // PUT: Replace the whole store document
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: any // { params: { id: string } }
 ) {
   const { id } = await params;
   const body = await req.json();
@@ -40,7 +40,7 @@ export async function PUT(
 // PATCH: Update specific fields of the store
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: any // { params: { id: string } }
 ) {
   const { id } = await params;
   const body = await req.json();
@@ -64,7 +64,7 @@ export async function PATCH(
 // DELETE store by ID
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: any // { params: { id: string } }
 ) {
   const { id } = await params;
   await connectToDB();

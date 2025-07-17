@@ -5,7 +5,7 @@ import User from "@/models/User"; // עדכן בהתאם לשם המודל של�
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: any //{ params: { id: string } }
 ) {
   try {
     await connectToDB();

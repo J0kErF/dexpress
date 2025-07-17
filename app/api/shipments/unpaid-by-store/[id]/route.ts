@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 // GET unpaid shipments for a specific store ID (in otherDetails[1])
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: any // { params: { id: string } }
 ) {
   try {
     await connectToDB();
