@@ -29,7 +29,7 @@ export async function GET(
 // PUT /api/payments/[id]
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: any //{ params: { id: string } }
 ) {
   try {
     await connectToDB();
@@ -54,7 +54,7 @@ export async function PUT(
 // DELETE /api/payments/[id]
 export async function DELETE(
   _req: NextRequest,
-  context: { params: { id: string } }
+  context: any // { params: { id: string } }
 ) {
   try {
     await connectToDB();
