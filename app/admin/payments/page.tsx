@@ -6,13 +6,12 @@ import Filters from "@/components/custom/admin/Filters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";// ✅ REMOVE ANY IMPORTED TYPES NAMED "PageProps"
 
-type AdminPaymentsPageProps = {
-  searchParams?: { [key: string]: string | string[] | undefined };
-};
-
 export default async function AdminPaymentsPage({
   searchParams,
-}: AdminPaymentsPageProps) {
+}: {
+  searchParams?: { [key: string]: string | string[] };
+}) {
+
 
   await connectToDB();
 
