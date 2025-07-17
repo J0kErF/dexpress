@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+// models/Shipment.ts
+import mongoose, { Schema, model, models } from "mongoose";
 import Counter from "./Counter";
 
-const ShipmentSchema = new mongoose.Schema(
+const ShipmentSchema = new Schema(
   {
     orderNumber: {
       type: Number,
@@ -16,20 +17,16 @@ const ShipmentSchema = new mongoose.Schema(
       required: true,
     },
     address: {
-      type: [String], // [city, location text, lng, lat]
+      type: [String],
       default: [null, null, null, null],
     },
-    shipmentDetails: {
-      type: String,
-    },
-    totalPrice: {
-      type: Number,
-    },
+    shipmentDetails: String,
+    totalPrice: Number,
     isPaid: {
       type: Boolean,
       default: false,
     },
-    otherDetails: { // [0: status, 1: storeId, 2: deliveryTime]
+    otherDetails: {
       type: [String],
       default: [],
     },
@@ -37,7 +34,7 @@ const ShipmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-save hook to auto-increment orderNumber
+// Pre-save hook
 ShipmentSchema.pre("save", async function (next) {
   if (this.isNew) {
     const counter = await Counter.findOneAndUpdate(
@@ -50,5 +47,4 @@ ShipmentSchema.pre("save", async function (next) {
   next();
 });
 
-export default mongoose.models.Shipment ||
-  mongoose.model("Shipment", ShipmentSchema);
+export default models.Shipment || model("Shipment", ShipmentSchema);

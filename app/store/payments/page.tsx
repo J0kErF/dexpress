@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { connectToDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import Payment from "@/models/Payment";
+import Shipment from "@/models/Shipment";
 import PaymentStoreCard from "@/components/custom/store/PaymentStoreCard";
 
 export default async function PaymentsPage() {
