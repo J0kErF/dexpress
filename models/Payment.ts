@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import "@/models/Shipment"; // ✅ Important: this registers the model
 
 const PaymentSchema = new mongoose.Schema(
   {
@@ -22,7 +23,7 @@ const PaymentSchema = new mongoose.Schema(
     orders: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Shipment",
+        ref: "Shipment", // this line requires Shipment model to be registered
       },
     ],
     notes: {

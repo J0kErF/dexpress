@@ -1,5 +1,6 @@
 import { connectToDB } from "@/lib/mongodb";
 import Payment from "@/models/Payment";
+import Shipment from "@/models/Shipment";
 import { NextResponse } from "next/server";
 
 // GET all payments for a specific store
