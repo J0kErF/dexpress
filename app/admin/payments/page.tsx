@@ -4,21 +4,29 @@ import Store from "@/models/Store";
 import PaymentStoreCard from "@/components/custom/admin/PaymentStoreCard";
 import Filters from "@/components/custom/admin/Filters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";// ✅ REMOVE ANY IMPORTED TYPES NAMED "PageProps"
+import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";
+
+// ✅ Define type locally to avoid collision with Next.js auto PageProps
+type AdminPaymentsPageProps = {
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
+};
 
 export default async function AdminPaymentsPage({
   searchParams,
-}: {
-  searchParams?: Record<string, string | string[]>;
-}) {
-
-
-
+}: AdminPaymentsPageProps) {
   await connectToDB();
 
-  const storeId = typeof searchParams?.storeId === "string" ? searchParams.storeId.trim() : "";
-  const fromRaw = typeof searchParams?.from === "string" ? searchParams.from : null;
-  const toRaw = typeof searchParams?.to === "string" ? searchParams.to : null;
+  const storeId =
+    typeof searchParams?.storeId === "string"
+      ? searchParams.storeId.trim()
+      : "";
+
+  const fromRaw =
+    typeof searchParams?.from === "string" ? searchParams.from : null;
+  const toRaw =
+    typeof searchParams?.to === "string" ? searchParams.to : null;
 
   const from = fromRaw ? parseISO(fromRaw) : null;
   const to = toRaw ? parseISO(toRaw) : null;
@@ -32,12 +40,10 @@ export default async function AdminPaymentsPage({
 
   const query: any = {};
 
-  // ✅ Handle "all" and store filtering
   if (storeId && storeId !== "all") {
     query.storeId = storeId;
   }
 
-  // ✅ Handle date filters
   if (from && to && isEqual(from, to)) {
     query.date = { $gte: startOfDay(from), $lte: endOfDay(to) };
   } else if (from || to) {
