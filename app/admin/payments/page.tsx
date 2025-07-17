@@ -51,7 +51,7 @@ export default async function AdminPaymentsPage({ searchParams }: PageProps) {
     .lean();
 
   const cleaned = payments.map((p) => ({
-    _id: p._id.toString(),
+    _id: (p._id as { toString(): string }).toString(),
     storeId: p.storeId?.toString?.() ?? "",
     date: p.date?.toISOString() ?? null,
     amount: p.amount,
