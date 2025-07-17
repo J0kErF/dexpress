@@ -6,27 +6,13 @@ import Filters from "@/components/custom/admin/Filters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";
 
-interface PaymentWithStore {
-  _id: any;
-  storeId: any;
-  date?: Date;
-  amount: number;
-  type: string;
-  notes?: string;
-  orders?: {
-    _id: any;
-    orderNumber?: string;
-  }[];
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
+// ✅ Explicit props interface to match App Router expectations
 interface PageProps {
   searchParams?: Record<string, string | string[] | undefined>;
 }
 
+// ✅ Fixed function signature using proper type
 export default async function AdminPaymentsPage({ searchParams }: PageProps) {
-
   await connectToDB();
 
   const storeId = typeof searchParams?.storeId === "string" ? searchParams.storeId.trim() : "";
@@ -50,7 +36,7 @@ export default async function AdminPaymentsPage({ searchParams }: PageProps) {
     query.storeId = storeId;
   }
 
-  // ✅ Handle all date filter combinations
+  // ✅ Handle date filters
   if (from && to && isEqual(from, to)) {
     query.date = { $gte: startOfDay(from), $lte: endOfDay(to) };
   } else if (from || to) {
@@ -62,7 +48,7 @@ export default async function AdminPaymentsPage({ searchParams }: PageProps) {
   const payments = await Payment.find(query)
     .populate({ path: "orders", select: "_id orderNumber" })
     .sort({ createdAt: -1 })
-    .lean<PaymentWithStore[]>();
+    .lean();
 
   const cleaned = payments.map((p) => ({
     _id: p._id.toString(),
@@ -71,7 +57,7 @@ export default async function AdminPaymentsPage({ searchParams }: PageProps) {
     amount: p.amount,
     type: p.type,
     notes: p.notes ?? "",
-    orders: (p.orders || []).map((o) => ({
+    orders: (p.orders || []).map((o: any) => ({
       _id: o._id.toString(),
       orderNumber: o.orderNumber || "ללא מזהה",
     })),
