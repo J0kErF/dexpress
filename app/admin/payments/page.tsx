@@ -9,8 +9,9 @@ import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";// ✅ REMOVE
 export default async function AdminPaymentsPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] };
+  searchParams?: Record<string, string | string[]>;
 }) {
+
 
 
   await connectToDB();
