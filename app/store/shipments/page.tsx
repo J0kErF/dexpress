@@ -24,7 +24,7 @@ export default function HomePage() {
       setLoading(true);
       setError(false);
 
-      const userId = user.id;
+      const userId = user?.id || '';
       const shipmentId = searchParams.get("id");
 
       if (shipmentId) {
