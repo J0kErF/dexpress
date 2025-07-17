@@ -15,7 +15,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function StoreLayout({ children }: { children: ReactNode }) {
     const user = await currentUser();
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/clerk/${user.id}`);
+    const userId = user?.id || '';
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/clerk/${userId}`);
     if (res.ok) {
         const data = await res.json();
         // Not signed in
