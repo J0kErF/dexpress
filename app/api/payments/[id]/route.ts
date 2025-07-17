@@ -11,13 +11,14 @@ export async function GET(
 
   try {
     const payment = await Payment.findById(params.id);
+
     if (!payment) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
     return NextResponse.json(payment, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch payment" }, { status: 500 });
   }
 }
 
@@ -35,12 +36,12 @@ export async function PUT(
     });
 
     if (!updated) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update payment" }, { status: 500 });
   }
 }
 
@@ -53,13 +54,14 @@ export async function DELETE(
 
   try {
     const deleted = await Payment.findByIdAndDelete(params.id);
+
     if (!deleted) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to delete payment" }, { status: 500 });
   }
 }
 
