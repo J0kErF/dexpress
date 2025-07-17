@@ -5,7 +5,7 @@ import Payment from "@/models/Payment";
 // GET /api/payments/[id]
 export async function GET(
   _req: NextRequest,
-  context: { params: { id: string } }
+  context: any // { params: { id: string } }
 ) {
   try {
     await connectToDB();
