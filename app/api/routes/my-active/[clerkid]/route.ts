@@ -47,7 +47,7 @@ async function populateShipment(order: any) {
 /* ---------- GET handler ---------- */
 export async function GET(
   req: NextRequest,
-  context: { params: { clerkid: string } }
+  context: any // { params: { clerkid: string } }
 ) {
   try {
     const { clerkid } = await context.params;

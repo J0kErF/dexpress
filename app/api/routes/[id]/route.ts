@@ -31,7 +31,10 @@ export async function PUT(
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _: NextRequest,
+   { params }: any // { params: { id: string } }
+) {
   try {
     await connectToDB();
 
