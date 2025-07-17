@@ -4,15 +4,16 @@ import Store from "@/models/Store";
 import PaymentStoreCard from "@/components/custom/admin/PaymentStoreCard";
 import Filters from "@/components/custom/admin/Filters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";
+import { parseISO, isEqual, startOfDay, endOfDay } from "date-fns";// ✅ REMOVE ANY IMPORTED TYPES NAMED "PageProps"
 
-// ✅ Explicit props interface to match App Router expectations
-interface PageProps {
-  searchParams?: Record<string, string | string[] | undefined>;
-}
+type AdminPaymentsPageProps = {
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
 
-// ✅ Fixed function signature using proper type
-export default async function AdminPaymentsPage({ searchParams }: PageProps) {
+export default async function AdminPaymentsPage({
+  searchParams,
+}: AdminPaymentsPageProps) {
+
   await connectToDB();
 
   const storeId = typeof searchParams?.storeId === "string" ? searchParams.storeId.trim() : "";
