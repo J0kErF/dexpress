@@ -21,11 +21,12 @@ interface PaymentWithStore {
   updatedAt?: Date;
 }
 
-export default async function AdminPaymentsPage({
-  searchParams,
-}: {
+interface PageProps {
   searchParams?: Record<string, string | string[] | undefined>;
-}) {
+}
+
+export default async function AdminPaymentsPage({ searchParams }: PageProps) {
+
   await connectToDB();
 
   const storeId = typeof searchParams?.storeId === "string" ? searchParams.storeId.trim() : "";
