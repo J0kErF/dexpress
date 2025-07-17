@@ -1,10 +1,10 @@
 import { connectToDB } from "@/lib/mongodb";
 import Payment from "@/models/Payment";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-// GET payment by ID
+// GET /api/payments/[id]
 export async function GET(
-  _req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await connectToDB();
@@ -14,41 +14,44 @@ export async function GET(
   if (!payment) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
   return NextResponse.json(payment);
 }
 
-// PUT: Replace the whole payment document
+// PUT /api/payments/[id]
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  await connectToDB();
   const { id } = params;
   const body = await req.json();
-  await connectToDB();
 
   try {
     const updated = await Payment.findByIdAndUpdate(id, body, { new: true });
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-// DELETE payment by ID
+// DELETE /api/payments/[id]
 export async function DELETE(
-  _req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
   await connectToDB();
+  const { id } = params;
 
   const deleted = await Payment.findByIdAndDelete(id);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
   return NextResponse.json({ success: true });
 }
 
