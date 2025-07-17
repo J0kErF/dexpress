@@ -24,6 +24,7 @@ export default function HomePage() {
     const { user, isLoaded } = useUser();
     const fetchData = async () => {
         try {
+            if (!user) return;
             const userId = user.id;
 
             const userDataResponse = await fetch(`/api/users/clerk/${userId}`, {
