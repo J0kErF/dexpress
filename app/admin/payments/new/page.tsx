@@ -8,8 +8,8 @@ export default async function AdminNewPaymentPage() {
   const storesRaw = await Store.find().select("_id businessName").lean();
 
   const stores = storesRaw.map((store) => ({
-    ...store,
-    _id: store._id.toString(),
+    _id: (store._id as { toString(): string }).toString(),
+    businessName: store.businessName as string,
   }));
 
   return (
