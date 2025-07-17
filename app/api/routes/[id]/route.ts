@@ -4,7 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import Route from "@/models/Route";
 import { connectToDB } from "@/lib/mongodb";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: any // { params: { id: string } }
+) {
   try {
     await connectToDB();
     const data = await req.json();
