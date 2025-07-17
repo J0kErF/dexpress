@@ -620,8 +620,8 @@ export const regionCities = {
 };
 
 export const deliveryPrices: Record<keyof typeof regionCities, number> = {
-    north: 40,
-    center: 50,
+    north: 50,
+    center: 60,
     south: 70,
     westBank: 70,
 };
